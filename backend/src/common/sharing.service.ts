@@ -45,8 +45,10 @@ export class SharingService {
         childrenOf.set(r.parentId, arr);
       }
     }
+    // Children of the user's role only. Peers who share the role are not included;
+    // the caller always adds the current user separately.
     const result: string[] = [];
-    const stack = [roleId];
+    const stack = [...(childrenOf.get(roleId) || [])];
     while (stack.length) {
       const id = stack.pop() as string;
       result.push(id);
@@ -94,7 +96,7 @@ export class SharingService {
     if (user.isAdmin) return true;
     if (ownerId === user.id) return true;
     const perms = await this.getRolePermissions(user.roleId);
-    if (perms[objectType]?.modifyAll || perms[objectType]?.viewAll) return true;
+    if (perms[objectType]?.modifyAll) return true;
 
     const roleIds = await this.getSubordinateRoleIds(user.roleId);
     if (roleIds.length) {

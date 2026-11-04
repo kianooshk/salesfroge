@@ -28,7 +28,7 @@ model User {
   isAdmin     Boolean @default(false)
 
   roleId String?
-  role   Role?   @relation(fields: [roleId], references: [id])
+  role   Role?   @relation(fields: [roleId], references: [id], onDelete: SetNull)
 
   googleCalendarTokens  Json?
   outlookCalendarTokens Json?
@@ -62,7 +62,7 @@ model Role {
   name        String  @unique
   description String?
   parentId    String?
-  parent      Role?   @relation("RoleHierarchy", fields: [parentId], references: [id])
+  parent      Role?   @relation("RoleHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children    Role[]  @relation("RoleHierarchy")
   // Object -> { read, create, edit, delete, viewAll, modifyAll }
   permissions Json    @default("{}")
@@ -194,7 +194,7 @@ model Contact {
   description   String?
 
   accountId String?
-  account   Account? @relation(fields: [accountId], references: [id])
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
 
   ownerId String
   owner   User   @relation("ContactOwner", fields: [ownerId], references: [id])
@@ -223,9 +223,9 @@ model Opportunity {
   description String?
 
   accountId String?
-  account   Account? @relation(fields: [accountId], references: [id])
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
   contactId String?
-  contact   Contact? @relation(fields: [contactId], references: [id])
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
   ownerId String
   owner   User   @relation("OpportunityOwner", fields: [ownerId], references: [id])
@@ -252,9 +252,9 @@ model Case {
   closedAt    DateTime?
 
   accountId String?
-  account   Account? @relation(fields: [accountId], references: [id])
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
   contactId String?
-  contact   Contact? @relation(fields: [contactId], references: [id])
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
   ownerId String
   owner   User   @relation("CaseOwner", fields: [ownerId], references: [id])

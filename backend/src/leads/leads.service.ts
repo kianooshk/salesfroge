@@ -1,73 +1,16 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SharingService } from '../common/sharing.service';
 import { AuthUser } from '../common/decorators';
-
-const OBJECT = 'Lead';
 
 @Injectable()
 export class LeadsService {
-  constructor(private prisma: PrismaService, private sharing: SharingService) {}
+  constructor(private prisma: PrismaService) {}
 
-  async findAll(user: AuthUser, query: { search?: string; status?: string; ownerId?: string }) {
-    const scope = await this.sharing.readScope(user, OBJECT);
-    const where: any = { AND: [scope, { isConverted: false }] };
-    if (query.status) where.AND.push({ status: query.status });
-    if (query.ownerId) where.AND.push({ ownerId: query.ownerId });
-    if (query.search) {
-      where.AND.push({
-        OR: [
-          { firstName: { contains: query.search, mode: 'insensitive' } },
-          { lastName: { contains: query.search, mode: 'insensitive' } },
-          { company: { contains: query.search, mode: 'insensitive' } },
-          { email: { contains: query.search, mode: 'insensitive' } },
-        ],
-      });
-    }
-    return this.prisma.lead.findMany({
-      where,
-      include: { owner: { select: { id: true, firstName: true, lastName: true, avatarColor: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async findOne(user: AuthUser, id: string) {
-    const lead = await this.prisma.lead.findUnique({
-      where: { id },
-      include: { owner: { select: { id: true, firstName: true, lastName: true, avatarColor: true } } },
-    });
-    if (!lead) throw new NotFoundException('Lead not found');
-    return lead;
-  }
-
-  async create(user: AuthUser, data: any) {
-    return this.prisma.lead.create({
-      data: { ...data, ownerId: data.ownerId || user.id },
-    });
-  }
-
-  async update(user: AuthUser, id: string, data: any) {
-    const lead = await this.prisma.lead.findUnique({ where: { id } });
-    if (!lead) throw new NotFoundException('Lead not found');
-    const canEdit = await this.sharing.canEditRecord(user, OBJECT, id, lead.ownerId);
-    if (!canEdit) throw new ForbiddenException('You cannot edit this lead');
-    return this.prisma.lead.update({ where: { id }, data });
-  }
-
-  async remove(user: AuthUser, id: string) {
-    const lead = await this.prisma.lead.findUnique({ where: { id } });
-    if (!lead) throw new NotFoundException('Lead not found');
-    const canEdit = await this.sharing.canEditRecord(user, OBJECT, id, lead.ownerId);
-    if (!canEdit) throw new ForbiddenException('You cannot delete this lead');
-    await this.prisma.lead.delete({ where: { id } });
-    return { success: true };
-  }
-
-  /** Convert a lead into Account + Contact (+ optional Opportunity). */
+  /** Convert a lead into an Account, a Contact, and optionally an Opportunity. */
   async convert(
     user: AuthUser,
     id: string,
-    options: { createOpportunity?: boolean; opportunityName?: string; amount?: number; closeDate?: string },
+    options: { createOpportunity?: boolean; opportunityName?: string; amount?: number; closeDate?: string } = {},
   ) {
     const lead = await this.prisma.lead.findUnique({ where: { id } });
     if (!lead) throw new NotFoundException('Lead not found');
@@ -85,6 +28,7 @@ export class LeadsService {
           billingState: lead.state,
           billingPostal: lead.postalCode,
           billingCountry: lead.country,
+          description: lead.description,
           ownerId: lead.ownerId,
         },
       });
@@ -96,28 +40,34 @@ export class LeadsService {
           title: lead.title,
           email: lead.email,
           phone: lead.phone,
+          mailingStreet: lead.street,
+          mailingCity: lead.city,
+          mailingState: lead.state,
+          mailingPostal: lead.postalCode,
+          mailingCountry: lead.country,
           accountId: account.id,
           ownerId: lead.ownerId,
         },
       });
 
-      let opportunity = null as null | { id: string };
-      if (options.createOpportunity) {
-        opportunity = await tx.opportunity.create({
+      let opportunityId: string | null = null;
+      if (options.createOpportunity !== false) {
+        const opportunity = await tx.opportunity.create({
           data: {
-            name: options.opportunityName || `${lead.company} Opportunity`,
+            name: options.opportunityName || `${lead.company} - ${lead.firstName} ${lead.lastName}`,
             accountId: account.id,
             contactId: contact.id,
             stage: 'Qualification',
-            amount: options.amount ?? null,
+            probability: 20,
+            amount: options.amount != null && options.amount !== ('' as any) ? Number(options.amount) : null,
             closeDate: options.closeDate ? new Date(options.closeDate) : null,
             leadSource: lead.source,
             ownerId: lead.ownerId,
           },
         });
+        opportunityId = opportunity.id;
       }
 
-      // Re-point the lead's activities/feed to the new contact.
       await tx.activity.updateMany({
         where: { relatedType: 'Lead', relatedId: lead.id },
         data: { relatedType: 'Contact', relatedId: contact.id },
@@ -131,7 +81,7 @@ export class LeadsService {
           status: 'Qualified',
           convertedAccountId: account.id,
           convertedContactId: contact.id,
-          convertedOpportunityId: opportunity?.id ?? null,
+          convertedOpportunityId: opportunityId,
         },
       });
 
@@ -139,7 +89,7 @@ export class LeadsService {
         lead: updated,
         accountId: account.id,
         contactId: contact.id,
-        opportunityId: opportunity?.id ?? null,
+        opportunityId,
       };
     });
   }

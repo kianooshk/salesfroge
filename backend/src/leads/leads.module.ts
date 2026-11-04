@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
+import { makeCrudController } from '../common/crud.controller';
+import { LEAD } from './tokens';
+import { LeadsConvertController } from './leads.controller';
 import { LeadsService } from './leads.service';
-import { LeadsController } from './leads.controller';
+
+const LeadCrudController = makeCrudController(LEAD);
 
 @Module({
+  controllers: [LeadCrudController, LeadsConvertController],
   providers: [LeadsService],
-  controllers: [LeadsController],
   exports: [LeadsService],
 })
 export class LeadsModule {}
