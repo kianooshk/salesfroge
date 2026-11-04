@@ -2,6 +2,16 @@
 
 Salesfroge is a single-company CRM. The interface follows the Lightning Experience layout (global header, app launcher, nav tabs, list views, record pages, path, related lists, activity timeline, and a kanban pipeline) and is branded as Salesfroge. It is not affiliated with Salesforce, and it does not use the Salesforce name as a product name, the Salesforce logo, or other Salesforce trademarks.
 
+## Screenshots
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+![Opportunity pipeline](docs/screenshots/pipeline.png)
+
+![Account related lists](docs/screenshots/account-related-lists.png)
+
+![Pipeline by stage](docs/screenshots/pipeline-by-stage.png)
+
 ## Features
 
 - **Leads** — assign an owner, set status, and convert a lead into an account, a contact, and an optional opportunity.
