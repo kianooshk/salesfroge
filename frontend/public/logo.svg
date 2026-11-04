@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Salesfroge">
+  <circle cx="16" cy="18" r="11" fill="#3ba55d"/>
+  <circle cx="48" cy="18" r="11" fill="#3ba55d"/>
+  <ellipse cx="32" cy="40" rx="24" ry="18" fill="#2e844a"/>
+  <ellipse cx="32" cy="44" rx="12" ry="8" fill="#b7e4c7"/>
+  <circle cx="16" cy="18" r="5.5" fill="#f4fff6"/>
+  <circle cx="48" cy="18" r="5.5" fill="#f4fff6"/>
+  <circle cx="17" cy="18.5" r="2.3" fill="#16325c"/>
+  <circle cx="49" cy="18.5" r="2.3" fill="#16325c"/>
+  <path d="M26 44c2.2 2.4 9.8 2.4 12 0" fill="none" stroke="#16325c" stroke-width="2" stroke-linecap="round"/>
+</svg>
