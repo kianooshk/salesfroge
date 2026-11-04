@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.next/
+out/
+build/
+coverage/
+*.log
+.env
+.env.local
+.DS_Store
+backend/prisma/generated/
+uploads/
+*.tsbuildinfo
+.turbo/

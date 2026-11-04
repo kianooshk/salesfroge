@@ -1,0 +1,493 @@
+// Salesfroge CRM data model
+// PostgreSQL + Prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Users, roles, teams, permissions
+// ---------------------------------------------------------------------------
+
+model User {
+  id          String  @id @default(cuid())
+  email       String  @unique
+  password    String? // null for Google-only accounts
+  firstName   String
+  lastName    String
+  title       String?
+  phone       String?
+  avatarColor String? @default("#1b5f8c")
+  googleId    String? @unique
+  isActive    Boolean @default(true)
+  isAdmin     Boolean @default(false)
+
+  roleId String?
+  role   Role?   @relation(fields: [roleId], references: [id])
+
+  googleCalendarTokens  Json?
+  outlookCalendarTokens Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  leads             Lead[]          @relation("LeadOwner")
+  accounts          Account[]       @relation("AccountOwner")
+  contacts          Contact[]       @relation("ContactOwner")
+  opportunities     Opportunity[]   @relation("OpportunityOwner")
+  cases             Case[]          @relation("CaseOwner")
+  activities        Activity[]      @relation("ActivityOwner")
+  createdActivities Activity[]      @relation("ActivityCreator")
+  feedItems         FeedItem[]      @relation("FeedAuthor")
+  feedComments      FeedComment[]   @relation("CommentAuthor")
+  notifications     Notification[]
+  emails            EmailMessage[]  @relation("EmailUser")
+  emailTemplates    EmailTemplate[]
+  files             FileAsset[]     @relation("FileUploader")
+  listViews         ListView[]
+  reports           Report[]
+  dashboards        Dashboard[]
+  customRecords     CustomRecord[]  @relation("CustomRecordOwner")
+  teamMemberships   TeamMember[]
+  shares            Share[]         @relation("ShareUser")
+}
+
+model Role {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  parentId    String?
+  parent      Role?   @relation("RoleHierarchy", fields: [parentId], references: [id])
+  children    Role[]  @relation("RoleHierarchy")
+  // Object -> { read, create, edit, delete, viewAll, modifyAll }
+  permissions Json    @default("{}")
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Team {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  members     TeamMember[]
+  shares      Share[]      @relation("ShareTeam")
+  createdAt   DateTime     @default(now())
+}
+
+model TeamMember {
+  id     String @id @default(cuid())
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   String @default("member") // member | lead
+
+  @@unique([teamId, userId])
+}
+
+// Record-level sharing. recordType is a logical object name (e.g. "Lead").
+model Share {
+  id         String   @id @default(cuid())
+  recordType String
+  recordId   String
+  access     String   @default("read") // read | edit
+  userId     String?
+  user       User?    @relation("ShareUser", fields: [userId], references: [id], onDelete: Cascade)
+  teamId     String?
+  team       Team?    @relation("ShareTeam", fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([recordType, recordId])
+}
+
+// ---------------------------------------------------------------------------
+// Core CRM objects
+// ---------------------------------------------------------------------------
+
+model Lead {
+  id          String  @id @default(cuid())
+  firstName   String
+  lastName    String
+  company     String
+  title       String?
+  email       String?
+  phone       String?
+  website     String?
+  status      String  @default("New") // New, Working, Nurturing, Qualified, Unqualified
+  rating      String? // Hot, Warm, Cold
+  source      String?
+  industry    String?
+  street      String?
+  city        String?
+  state       String?
+  postalCode  String?
+  country     String?
+  description String?
+
+  ownerId String
+  owner   User   @relation("LeadOwner", fields: [ownerId], references: [id])
+
+  isConverted            Boolean   @default(false)
+  convertedAt            DateTime?
+  convertedAccountId     String?
+  convertedContactId     String?
+  convertedOpportunityId String?
+
+  customFields Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+  @@index([ownerId])
+}
+
+model Account {
+  id             String  @id @default(cuid())
+  name           String
+  type           String? // Customer, Prospect, Partner
+  industry       String?
+  website        String?
+  phone          String?
+  billingStreet  String?
+  billingCity    String?
+  billingState   String?
+  billingPostal  String?
+  billingCountry String?
+  employees      Int?
+  annualRevenue  Float?
+  description    String?
+
+  ownerId String
+  owner   User   @relation("AccountOwner", fields: [ownerId], references: [id])
+
+  contacts      Contact[]
+  opportunities Opportunity[]
+  cases         Case[]
+
+  customFields Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([ownerId])
+}
+
+model Contact {
+  id            String  @id @default(cuid())
+  firstName     String
+  lastName      String
+  title         String?
+  email         String?
+  phone         String?
+  mobile        String?
+  department    String?
+  mailingStreet String?
+  mailingCity   String?
+  mailingState  String?
+  mailingPostal String?
+  mailingCountry String?
+  description   String?
+
+  accountId String?
+  account   Account? @relation(fields: [accountId], references: [id])
+
+  ownerId String
+  owner   User   @relation("ContactOwner", fields: [ownerId], references: [id])
+
+  opportunities Opportunity[]
+  cases         Case[]
+
+  customFields Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([accountId])
+}
+
+model Opportunity {
+  id          String    @id @default(cuid())
+  name        String
+  stage       String    @default("Prospecting")
+  amount      Float?
+  closeDate   DateTime?
+  probability Int?
+  type        String? // New Business, Existing Business
+  leadSource  String?
+  nextStep    String?
+  description String?
+
+  accountId String?
+  account   Account? @relation(fields: [accountId], references: [id])
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+
+  ownerId String
+  owner   User   @relation("OpportunityOwner", fields: [ownerId], references: [id])
+
+  customFields Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([stage])
+  @@index([ownerId])
+  @@index([accountId])
+}
+
+model Case {
+  id          String    @id @default(cuid())
+  caseNumber  Int       @unique @default(autoincrement())
+  subject     String
+  description String?
+  status      String    @default("New") // New, Working, Escalated, Closed
+  priority    String    @default("Medium") // Low, Medium, High
+  origin      String? // Email, Phone, Web
+  type        String?
+  slaDueAt    DateTime?
+  closedAt    DateTime?
+
+  accountId String?
+  account   Account? @relation(fields: [accountId], references: [id])
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+
+  ownerId String
+  owner   User   @relation("CaseOwner", fields: [ownerId], references: [id])
+
+  customFields Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+  @@index([ownerId])
+}
+
+// ---------------------------------------------------------------------------
+// Activities (tasks, calls, meetings, notes) - polymorphic on any record
+// ---------------------------------------------------------------------------
+
+model Activity {
+  id          String    @id @default(cuid())
+  type        String // Task, Call, Meeting, Note
+  subject     String
+  description String?
+  status      String?   @default("Open") // Open, Completed (tasks)
+  priority    String? // Low, Normal, High (tasks)
+  dueDate     DateTime?
+  startTime   DateTime?
+  endTime     DateTime?
+  location    String?
+
+  relatedType String?
+  relatedId   String?
+
+  ownerId String
+  owner   User   @relation("ActivityOwner", fields: [ownerId], references: [id])
+
+  createdById String
+  createdBy   User   @relation("ActivityCreator", fields: [createdById], references: [id])
+
+  customFields Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([relatedType, relatedId])
+  @@index([ownerId])
+  @@index([type])
+}
+
+// ---------------------------------------------------------------------------
+// Files & attachments
+// ---------------------------------------------------------------------------
+
+model FileAsset {
+  id           String   @id @default(cuid())
+  filename     String // stored filename
+  originalName String
+  mimeType     String
+  size         Int
+  relatedType  String?
+  relatedId    String?
+  uploadedById String
+  uploadedBy   User     @relation("FileUploader", fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([relatedType, relatedId])
+}
+
+// ---------------------------------------------------------------------------
+// Chatter-style feed
+// ---------------------------------------------------------------------------
+
+model FeedItem {
+  id          String        @id @default(cuid())
+  body        String
+  authorId    String
+  author      User          @relation("FeedAuthor", fields: [authorId], references: [id])
+  relatedType String? // record the post is on; null => company feed
+  relatedId   String?
+  comments    FeedComment[]
+  createdAt   DateTime      @default(now())
+
+  @@index([relatedType, relatedId])
+}
+
+model FeedComment {
+  id         String   @id @default(cuid())
+  feedItemId String
+  feedItem   FeedItem @relation(fields: [feedItemId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User     @relation("CommentAuthor", fields: [authorId], references: [id])
+  body       String
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // mention, comment, assignment
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}
+
+// ---------------------------------------------------------------------------
+// Email
+// ---------------------------------------------------------------------------
+
+model EmailMessage {
+  id           String    @id @default(cuid())
+  direction    String // outbound | inbound
+  fromAddress  String
+  toAddresses  String
+  ccAddresses  String?
+  subject      String
+  body         String
+  status       String? // sent | failed | received
+  relatedType  String?
+  relatedId    String?
+  userId       String?
+  user         User?     @relation("EmailUser", fields: [userId], references: [id])
+  templateId   String?
+  messageId    String?
+  sentAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([relatedType, relatedId])
+}
+
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  subject     String
+  body        String
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Custom objects & fields (no-code)
+// ---------------------------------------------------------------------------
+
+model CustomObject {
+  id          String         @id @default(cuid())
+  label       String
+  pluralLabel String
+  apiKey      String         @unique
+  icon        String?        @default("custom")
+  description String?
+  fields      CustomField[]
+  records     CustomRecord[]
+  createdAt   DateTime       @default(now())
+}
+
+model CustomField {
+  id             String        @id @default(cuid())
+  // Object this field belongs to. Either a standard object name ("Lead", ...)
+  // or a custom object referenced by customObjectId.
+  objectType     String
+  customObjectId String?
+  customObject   CustomObject? @relation(fields: [customObjectId], references: [id], onDelete: Cascade)
+  label          String
+  apiName        String
+  // text, textarea, number, currency, date, datetime, checkbox, picklist, email, phone, url
+  type           String
+  options        Json? // picklist options
+  required       Boolean       @default(false)
+  order          Int           @default(0)
+  createdAt      DateTime      @default(now())
+
+  @@unique([objectType, apiName])
+}
+
+model CustomRecord {
+  id             String       @id @default(cuid())
+  customObjectId String
+  customObject   CustomObject @relation(fields: [customObjectId], references: [id], onDelete: Cascade)
+  name           String
+  values         Json         @default("{}")
+  ownerId        String
+  owner          User         @relation("CustomRecordOwner", fields: [ownerId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([customObjectId])
+}
+
+// ---------------------------------------------------------------------------
+// Saved list views, reports & dashboards
+// ---------------------------------------------------------------------------
+
+model ListView {
+  id         String   @id @default(cuid())
+  name       String
+  objectType String
+  filters    Json     @default("[]") // [{ field, op, value }]
+  columns    Json     @default("[]")
+  sortBy     String?
+  sortDir    String?  @default("asc")
+  isShared   Boolean  @default(false)
+  ownerId    String
+  owner      User     @relation(fields: [ownerId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([objectType])
+}
+
+model Report {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  objectType     String
+  groupBy        String?
+  aggregate      String?  @default("count") // count | sum | avg
+  aggregateField String?
+  filters        Json     @default("[]")
+  chartType      String?  @default("bar") // bar | pie | line | funnel | table
+  ownerId        String
+  owner          User     @relation(fields: [ownerId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Dashboard {
+  id        String   @id @default(cuid())
+  name      String
+  // [{ reportId, width }]
+  widgets   Json     @default("[]")
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
