@@ -12,7 +12,7 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:push": "prisma db push",
     "seed": "ts-node src/seed-cli.ts",
-    "db:init": "prisma generate && prisma db push --skip-generate && ts-node prisma/seed.ts",
+    "db:init": "prisma generate && prisma db push --skip-generate && ts-node src/seed-cli.ts",
     "test": "jest --config jest.config.js --runInBand",
     "test:watch": "jest --watch"
   },

@@ -1,0 +1,105 @@
+html, body { margin: 0; background: #f3f2f2; color: #181818; }
+a { color: #0176d3; }
+button, input, select, textarea { font: inherit; }
+
+.sf-brand { display: flex; align-items: center; gap: 0.5rem; color: #fff; text-decoration: none; }
+.sf-brand strong { font-size: 1.05rem; letter-spacing: 0.01em; }
+.sf-brand img { width: 2rem; height: 2rem; display: block; }
+.slds-global-header__logo { background: none !important; width: auto; height: auto; }
+
+.sf-shell { padding-top: 3.125rem; min-height: 100vh; }
+.sf-context { position: sticky; top: 3.125rem; z-index: 100; background: #fff; }
+.sf-main { padding: 0.75rem; }
+@media (min-width: 48em) { .sf-main { padding: 1rem 1.5rem 2.5rem; } }
+
+.sf-search { position: relative; width: min(36rem, 50vw); }
+.sf-search-results, .sf-menu, .sf-launcher {
+  position: absolute; z-index: 9000; background: #fff; border-radius: 0.25rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,.18); color: #181818;
+}
+.sf-search-results { top: 2.4rem; left: 0; right: 0; max-height: 22rem; overflow: auto; }
+.sf-search-results a, .sf-menu a, .sf-menu button {
+  display: block; width: 100%; text-align: left; padding: 0.55rem 0.75rem; background: none; border: 0; color: inherit; cursor: pointer;
+}
+.sf-search-results a:hover, .sf-menu a:hover, .sf-menu button:hover { background: #f3f3f3; text-decoration: none; }
+.sf-menu { top: 2.6rem; right: 0; min-width: 16rem; }
+.sf-launcher { top: 3.4rem; left: 0.5rem; width: min(22rem, calc(100vw - 1rem)); padding: 0.75rem; }
+.sf-launcher-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; }
+.sf-launcher a {
+  display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 0.55rem 0.25rem;
+  color: #181818; text-align: center; border-radius: 0.25rem; font-size: 0.75rem; text-decoration: none;
+}
+.sf-launcher a:hover { background: #f3f2f2; }
+
+.sf-highlights { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 0.75rem 1rem; margin-top: 0.75rem; }
+.sf-highlights span { display: block; color: #706e6b; font-size: 0.75rem; }
+.sf-highlights strong { font-weight: 600; }
+
+.sf-kanban { display: flex; gap: 0.75rem; overflow-x: auto; align-items: flex-start; padding-bottom: 1rem; }
+.sf-kanban-col { flex: 0 0 17rem; background: #e5e9f0; border-radius: 0.25rem; min-height: 12rem; }
+.sf-kanban-head { display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.6rem 0.7rem 0.2rem; font-weight: 700; }
+.sf-kanban-card { display: block; background: #fff; margin: 0.45rem; padding: 0.65rem 0.7rem; border-radius: 0.25rem; box-shadow: 0 1px 2px rgba(0,0,0,.12); color: inherit; text-decoration: none; cursor: grab; }
+.sf-kanban-card:hover { text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,.16); }
+.sf-muted { color: #706e6b; font-size: 0.75rem; }
+
+.sf-chart { width: 100%; height: auto; }
+.sf-funnel-row { display: grid; grid-template-columns: 8rem 1fr; gap: 0.5rem; align-items: center; margin: 0.3rem 0; }
+.sf-funnel-label { font-size: 0.75rem; color: #444; }
+.sf-funnel-track { background: #f3f2f2; border-radius: 0.25rem; }
+.sf-funnel-bar { background: #0176d3; color: #fff; font-size: 0.75rem; padding: 0.2rem 0.45rem; border-radius: 0.25rem; min-width: 2rem; }
+
+.sf-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #dddbda; border: 1px solid #dddbda; }
+.sf-cal-head, .sf-cal-day { background: #fff; min-width: 0; }
+.sf-cal-head { padding: 0.35rem; text-align: center; font-size: 0.75rem; color: #706e6b; font-weight: 700; }
+.sf-cal-day { min-height: 5.5rem; padding: 0.25rem; }
+.sf-cal-day.is-out { background: #fafaf9; color: #969492; }
+.sf-pill { display: block; background: #eef4ff; color: #014486; border-radius: 0.2rem; padding: 0.1rem 0.25rem; margin-top: 0.15rem; font-size: 0.68rem; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sf-pill.task { background: #f8e6d0; color: #8c4b02; }
+
+.sf-mention { color: #0176d3; font-weight: 600; }
+.sf-avatar {
+  width: 2rem; height: 2rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 0.75rem; font-weight: 700; flex: 0 0 auto;
+}
+.sf-login {
+  min-height: 100vh; display: grid; place-items: center; padding: 1.5rem;
+  background: radial-gradient(circle at 20% 10%, #1b96ff 0, transparent 28%), linear-gradient(160deg, #0b3a5b, #16325c 45%, #1f6b3a);
+}
+.sf-login-card { width: min(26rem, 100%); }
+.sf-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.75rem; }
+.sf-stat { background: #fff; border: 1px solid #dddbda; border-radius: 0.25rem; padding: 0.8rem 0.9rem; }
+.sf-stat b { display: block; font-size: 1.35rem; }
+.sf-two { display: grid; gap: 1rem; }
+@media (min-width: 64em) { .sf-two { grid-template-columns: 1.4fr 1fr; } }
+.sf-error { color: #ba0517; margin: 0.5rem 0; }
+.sf-path-btn { background: none; border: 0; color: inherit; cursor: pointer; font: inherit; }
+
+button.sf-nav-toggle { display: none; }
+.slds-page-header__col-title { min-width: 10rem; overflow: visible; }
+.slds-page-header__col-actions .slds-button-group { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.25rem; }
+.sf-context { position: sticky; }
+@media (max-width: 48em) {
+  .sf-search { display: none !important; }
+  button.sf-nav-toggle { display: inline-flex; }
+  .sf-context-nav { display: none; }
+  .sf-context-nav.is-open {
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: #fff;
+    z-index: 300;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.16);
+    max-height: 70vh;
+    overflow: auto;
+  }
+  .sf-context-nav.is-open .slds-grid { display: flex; flex-direction: column; }
+  .sf-cal-day { min-height: 3.4rem; }
+  .sf-funnel-row { grid-template-columns: 1fr; }
+  .sf-table thead { display: none; }
+  .sf-table, .sf-table tbody, .sf-table tr, .sf-table td { display: block; width: 100%; }
+  .sf-table tr { margin-bottom: 0.75rem; border: 1px solid #dddbda; border-radius: 0.25rem; background: #fff; }
+  .sf-table td { display: flex; justify-content: space-between; gap: 1rem; border: 0; padding: 0.45rem 0.75rem; }
+  .sf-table td::before { content: attr(data-label); color: #706e6b; font-weight: 600; }
+}

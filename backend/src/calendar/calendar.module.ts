@@ -261,8 +261,13 @@ export class CalendarController {
   }
 
   @Get('google/connect')
-  googleConnect(@CurrentUser() user: AuthUser, @Res() res: Response) {
-    res.redirect(this.calendar.connectUrl(user, 'google'));
+  googleConnect(@CurrentUser() user: AuthUser, @Query('json') json: string, @Res() res: Response) {
+    const url = this.calendar.connectUrl(user, 'google');
+    if (json) {
+      res.json({ url });
+      return;
+    }
+    res.redirect(url);
   }
 
   @Public()
@@ -278,8 +283,13 @@ export class CalendarController {
   }
 
   @Get('outlook/connect')
-  outlookConnect(@CurrentUser() user: AuthUser, @Res() res: Response) {
-    res.redirect(this.calendar.connectUrl(user, 'outlook'));
+  outlookConnect(@CurrentUser() user: AuthUser, @Query('json') json: string, @Res() res: Response) {
+    const url = this.calendar.connectUrl(user, 'outlook');
+    if (json) {
+      res.json({ url });
+      return;
+    }
+    res.redirect(url);
   }
 
   @Public()

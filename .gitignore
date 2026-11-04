@@ -10,5 +10,6 @@ coverage/
 .DS_Store
 backend/prisma/generated/
 uploads/
+frontend/public/slds/
 *.tsbuildinfo
 .turbo/
