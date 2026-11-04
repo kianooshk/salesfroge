@@ -21,12 +21,14 @@ export default function ReportPage() {
     <div>
       <div className="slds-page-header">
         <div className="slds-page-header__row">
-          <div>
+          <div className="slds-page-header__col-title">
             <p className="slds-page-header__name-meta"><Link href="/reports">Reports</Link></p>
             <h1 className="slds-page-header__title">{data.report.name}</h1>
             <p className="sf-muted">{data.report.description || data.report.objectType} · {data.result.total} records</p>
           </div>
-          <button className="slds-button slds-button_destructive" onClick={async () => { await api(`/reports/${params.id}`, { method: 'DELETE' }); router.push('/reports'); }}>Delete</button>
+          <div className="slds-page-header__col-actions">
+            <button className="slds-button slds-button_destructive" onClick={async () => { await api(`/reports/${params.id}`, { method: 'DELETE' }); router.push('/reports'); }}>Delete</button>
+          </div>
         </div>
       </div>
       <article className="slds-card slds-m-top_medium">

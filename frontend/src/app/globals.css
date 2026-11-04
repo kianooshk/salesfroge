@@ -8,7 +8,14 @@ button, input, select, textarea { font: inherit; }
 .slds-global-header__logo { background: none !important; width: auto; height: auto; }
 
 .sf-shell { padding-top: 3.125rem; min-height: 100vh; }
-.sf-context { position: sticky; top: 3.125rem; z-index: 100; background: #fff; }
+.slds-context-bar.sf-context {
+  position: sticky;
+  top: 3.125rem;
+  z-index: 100;
+  height: auto;
+  min-height: 2.5rem;
+  background: #fff;
+}
 .sf-main { padding: 0.75rem; }
 @media (min-width: 48em) { .sf-main { padding: 1rem 1.5rem 2.5rem; } }
 
@@ -77,7 +84,7 @@ button, input, select, textarea { font: inherit; }
 button.sf-nav-toggle { display: none; }
 .slds-page-header__col-title { min-width: 10rem; overflow: visible; }
 .slds-page-header__col-actions .slds-button-group { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.25rem; }
-.sf-context { position: sticky; }
+.slds-context-bar.sf-context { position: sticky; top: 3.125rem; }
 @media (max-width: 48em) {
   .sf-search { display: none !important; }
   button.sf-nav-toggle { display: inline-flex; }

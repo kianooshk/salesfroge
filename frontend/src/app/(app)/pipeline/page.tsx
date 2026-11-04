@@ -27,12 +27,14 @@ export default function PipelinePage() {
     <div>
       <Banner error={error} />
       <div className="slds-page-header">
-        <div className="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
-          <div>
+        <div className="slds-page-header__row">
+          <div className="slds-page-header__col-title">
             <h1 className="slds-page-header__title">Pipeline</h1>
             <p className="sf-muted">Drag a card to change its stage.</p>
           </div>
-          <Link className="slds-button slds-button_neutral" href="/o/opportunities">List view</Link>
+          <div className="slds-page-header__col-actions">
+            <Link className="slds-button slds-button_neutral" href="/o/opportunities">List view</Link>
+          </div>
         </div>
       </div>
       <div className="sf-kanban slds-m-top_medium">
